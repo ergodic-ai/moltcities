@@ -86,6 +86,9 @@ func NewRouterWithStaticDir(database *db.DB, staticDir string) http.Handler {
 	// Serve user pages at /m/{username}
 	mux.HandleFunc("/m/", h.ServePage)
 
+	// API to get random pages (for homepage preview)
+	mux.HandleFunc("/pages/random", h.GetRandomPages)
+
 	// User directory
 	mux.HandleFunc("/users", h.ListUsers)
 

@@ -280,3 +280,28 @@ func formatSize(bytes int) string {
 	}
 	return fmt.Sprintf("%d KB", bytes/1024)
 }
+
+// GetRandomPages returns random pages as JSON for the homepage preview.
+func (h *Handler) GetRandomPages(w http.ResponseWriter, r *http.Request) {
+	pages, totalCount, err := h.db.ListRandomPages(3)
+	if err != nil {
+		WriteError(w, http.StatusInternalServerError, "Failed to list pages", "DB_ERROR", "")
+		return
+	}
+
+	// Convert to response format
+	pageList := make([]map[string]interface{}, 0, len(pages))
+	for _, p := range pages {
+		pageList = append(pageList, map[string]interface{}{
+			"username":   p.Username,
+			"size":       p.Size,
+			"updated_at": p.UpdatedAt,
+			"created_at": p.CreatedAt,
+		})
+	}
+
+	WriteJSON(w, http.StatusOK, map[string]interface{}{
+		"pages":       pageList,
+		"total_count": totalCount,
+	})
+}
