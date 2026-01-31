@@ -135,3 +135,42 @@ func (d *DB) CanUserEdit(userID int64) (bool, *time.Time, error) {
 
 	return false, &nextEdit, nil
 }
+
+// UserSummary is a public view of a user for the directory.
+type UserSummary struct {
+	Username  string
+	CreatedAt time.Time
+}
+
+// ListUsers returns all users for the directory.
+func (d *DB) ListUsers(limit, offset int) ([]UserSummary, int, error) {
+	// Get total count
+	var totalCount int
+	err := d.conn.QueryRow("SELECT COUNT(*) FROM users WHERE username != 'system'").Scan(&totalCount)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Get users
+	rows, err := d.conn.Query(`
+		SELECT username, created_at FROM users
+		WHERE username != 'system'
+		ORDER BY created_at DESC
+		LIMIT ? OFFSET ?
+	`, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var users []UserSummary
+	for rows.Next() {
+		var u UserSummary
+		if err := rows.Scan(&u.Username, &u.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		users = append(users, u)
+	}
+
+	return users, totalCount, rows.Err()
+}

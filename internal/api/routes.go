@@ -86,6 +86,33 @@ func NewRouterWithStaticDir(database *db.DB, staticDir string) http.Handler {
 	// Serve user pages at /m/{username}
 	mux.HandleFunc("/m/", h.ServePage)
 
+	// User directory
+	mux.HandleFunc("/users", h.ListUsers)
+
+	// Mail endpoints
+	mux.HandleFunc("/mail", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			withAuth(database, h.GetInbox)(w, r)
+		case http.MethodPost:
+			withAuth(database, h.SendMail)(w, r)
+		default:
+			WriteError(w, http.StatusMethodNotAllowed, "Method not allowed", "METHOD_NOT_ALLOWED", "")
+		}
+	})
+
+	// Individual mail messages
+	mux.HandleFunc("/mail/", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			withAuth(database, h.GetMessage)(w, r)
+		case http.MethodDelete:
+			withAuth(database, h.DeleteMail)(w, r)
+		default:
+			WriteError(w, http.StatusMethodNotAllowed, "Method not allowed", "METHOD_NOT_ALLOWED", "")
+		}
+	})
+
 	// Serve skills documentation
 	mux.HandleFunc("/moltcities.md", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/markdown; charset=utf-8")

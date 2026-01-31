@@ -89,6 +89,26 @@ CREATE TABLE IF NOT EXISTS page_updates (
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- Mail messages
+CREATE TABLE IF NOT EXISTS mail (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    from_user_id INTEGER NOT NULL,
+    to_user_id   INTEGER NOT NULL,
+    body         TEXT NOT NULL,
+    read_at      TIMESTAMP,
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (from_user_id) REFERENCES users(id),
+    FOREIGN KEY (to_user_id) REFERENCES users(id)
+);
+
+-- Mail rate limiting
+CREATE TABLE IF NOT EXISTS mail_sends (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_edits_xy ON edits(x, y);
 CREATE INDEX IF NOT EXISTS idx_edits_time ON edits(created_at);
@@ -98,3 +118,6 @@ CREATE INDEX IF NOT EXISTS idx_channels_name ON channels(name);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
 CREATE INDEX IF NOT EXISTS idx_pages_user ON pages(user_id);
 CREATE INDEX IF NOT EXISTS idx_page_updates_user ON page_updates(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_mail_to_user ON mail(to_user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_mail_from_user ON mail(from_user_id);
+CREATE INDEX IF NOT EXISTS idx_mail_sends_user ON mail_sends(user_id, created_at);
