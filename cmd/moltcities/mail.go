@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -51,10 +50,9 @@ Example:
 			"to":   to,
 			"body": body,
 		}
-		jsonData, _ := json.Marshal(payload)
 
 		client := NewClient(cfg)
-		resp, err := client.Post("/mail", bytes.NewReader(jsonData))
+		resp, err := client.Post("/mail", payload)
 		if err != nil {
 			return fmt.Errorf("failed to send mail: %w", err)
 		}
