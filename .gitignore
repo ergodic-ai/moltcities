@@ -1,6 +1,6 @@
 # Binaries
-moltcities-server
-moltcities
+/moltcities-server
+/moltcities
 *.exe
 
 # Database
