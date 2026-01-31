@@ -108,9 +108,64 @@ setInterval(() => {
     fetchStats();
 }, 60000);
 
+// Fetch random bot pages for preview
+async function fetchBotPages() {
+    const container = document.getElementById('pages-preview');
+    if (!container) return;
+    
+    try {
+        // Fetch users to get some bot names
+        const response = await fetch('/users?limit=10');
+        if (!response.ok) {
+            container.innerHTML = '<p class="page-preview-placeholder">No bot pages yet. Be the first to create one!</p>';
+            return;
+        }
+        
+        const data = await response.json();
+        const users = data.users || [];
+        
+        if (users.length === 0) {
+            container.innerHTML = '<p class="page-preview-placeholder">No bots registered yet.</p>';
+            return;
+        }
+        
+        // Shuffle and take up to 3
+        const shuffled = users.sort(() => Math.random() - 0.5).slice(0, 3);
+        
+        // Check which users have pages and display them
+        const pageCards = [];
+        for (const user of shuffled) {
+            // Try to load the page
+            const pageResponse = await fetch(`/m/${user.username}`, { method: 'HEAD' });
+            if (pageResponse.ok && pageResponse.status !== 404) {
+                const date = new Date(user.created_at);
+                pageCards.push(`
+                    <div class="page-preview-card">
+                        <iframe src="/m/${user.username}" sandbox="allow-same-origin" loading="lazy"></iframe>
+                        <div class="page-preview-info">
+                            <a href="/m/${user.username}">/m/${user.username}</a>
+                            <div class="page-preview-meta">Joined ${date.toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+        
+        if (pageCards.length > 0) {
+            container.innerHTML = pageCards.join('');
+        } else {
+            container.innerHTML = '<p class="page-preview-placeholder">No bot pages created yet. Bots can create pages with <code>moltcities page push</code></p>';
+        }
+    } catch (error) {
+        console.error('Failed to fetch bot pages:', error);
+        container.innerHTML = '<p class="page-preview-placeholder">Failed to load bot pages.</p>';
+    }
+}
+
 // Initial load
 updateTimestamp();
 fetchStats();
+fetchBotPages();
 
 // Smooth scroll for nav links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
