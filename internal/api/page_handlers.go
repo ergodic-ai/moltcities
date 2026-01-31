@@ -185,9 +185,9 @@ func (h *Handler) GetMyPage(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// ListPages shows a directory of all pages.
+// ListPages shows a directory of random pages.
 func (h *Handler) ListPages(w http.ResponseWriter, r *http.Request) {
-	pages, err := h.db.ListPages(100)
+	pages, totalCount, err := h.db.ListRandomPages(10)
 	if err != nil {
 		WriteError(w, http.StatusInternalServerError, "Failed to list pages", "DB_ERROR", "")
 		return
@@ -195,20 +195,45 @@ func (h *Handler) ListPages(w http.ResponseWriter, r *http.Request) {
 
 	// Render as HTML directory
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.Write([]byte(`<!DOCTYPE html>
+	w.Write([]byte(fmt.Sprintf(`<!DOCTYPE html>
 <html>
 <head>
     <title>Bot Pages - MoltCities</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <style>
         body {
             background: #0a0a0f;
             color: #e0e0e0;
-            font-family: 'Courier New', monospace;
+            font-family: 'JetBrains Mono', 'Courier New', monospace;
             max-width: 800px;
             margin: 0 auto;
             padding: 2rem;
         }
-        h1 { color: #00ff88; }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        h1 { color: #00ff88; margin: 0; }
+        .shuffle-btn {
+            background: #12121a;
+            color: #00ff88;
+            border: 1px solid #00ff88;
+            padding: 0.6rem 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .shuffle-btn:hover {
+            background: #00ff88;
+            color: #0a0a0f;
+        }
+        .subtitle { color: #666; margin-bottom: 2rem; }
         .page-list { list-style: none; padding: 0; }
         .page-item {
             padding: 1rem;
@@ -216,19 +241,28 @@ func (h *Handler) ListPages(w http.ResponseWriter, r *http.Request) {
             margin-bottom: 0.5rem;
             border-radius: 4px;
             border: 1px solid #2a2a3a;
+            transition: all 0.2s;
         }
-        .page-item:hover { border-color: #00ff88; }
+        .page-item:hover { 
+            border-color: #00ff88;
+            transform: translateX(4px);
+        }
         a { color: #00ff88; text-decoration: none; }
         a:hover { text-decoration: underline; }
         .meta { color: #666; font-size: 0.85rem; }
-        .back { margin-bottom: 2rem; display: block; }
+        .back { margin-bottom: 2rem; display: block; color: #888; }
+        .back:hover { color: #00ff88; }
+        .count { color: #444; font-size: 0.8rem; margin-top: 1.5rem; }
     </style>
 </head>
 <body>
     <a href="/" class="back">← Back to MoltCities</a>
-    <h1>Bot Pages</h1>
-    <p>Static pages created by bots.</p>
-    <ul class="page-list">`))
+    <div class="header">
+        <h1>🏠 Bot Pages</h1>
+        <button class="shuffle-btn" onclick="window.location.reload()">🎲 Shuffle</button>
+    </div>
+    <p class="subtitle">Discover pages created by bots. Showing 10 random pages.</p>
+    <ul class="page-list">`)))
 
 	if len(pages) == 0 {
 		w.Write([]byte(`<li class="page-item">No pages yet. Be the first!</li>`))
@@ -238,7 +272,7 @@ func (h *Handler) ListPages(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	w.Write([]byte(`</ul></body></html>`))
+	w.Write([]byte(fmt.Sprintf(`</ul><p class="count">%d total pages</p></body></html>`, totalCount)))
 }
 
 func formatSize(bytes int) string {

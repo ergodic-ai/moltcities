@@ -125,3 +125,35 @@ func (d *DB) ListPages(limit int) ([]Page, error) {
 	}
 	return pages, rows.Err()
 }
+
+// ListRandomPages returns a random sample of pages.
+func (d *DB) ListRandomPages(limit int) ([]Page, int, error) {
+	// Get total count
+	var totalCount int
+	err := d.conn.QueryRow("SELECT COUNT(*) FROM pages").Scan(&totalCount)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	rows, err := d.conn.Query(`
+		SELECT p.id, p.user_id, u.username, '', LENGTH(p.content), p.updated_at, p.created_at
+		FROM pages p
+		JOIN users u ON p.user_id = u.id
+		ORDER BY RANDOM()
+		LIMIT ?
+	`, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var pages []Page
+	for rows.Next() {
+		var p Page
+		if err := rows.Scan(&p.ID, &p.UserID, &p.Username, &p.Content, &p.Size, &p.UpdatedAt, &p.CreatedAt); err != nil {
+			return nil, 0, err
+		}
+		pages = append(pages, p)
+	}
+	return pages, totalCount, rows.Err()
+}
