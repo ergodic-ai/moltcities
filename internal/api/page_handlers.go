@@ -11,8 +11,6 @@ import (
 const (
 	// MaxPageSize is the maximum allowed page size (100KB)
 	MaxPageSize = 100 * 1024
-	// MaxPageUpdatesPerDay is the rate limit for page updates
-	MaxPageUpdatesPerDay = 10
 )
 
 // Dangerous HTML patterns to remove (basic sanitization)
@@ -99,7 +97,8 @@ func (h *Handler) UpdatePage(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, http.StatusInternalServerError, "Failed to check rate limit", "DB_ERROR", "")
 		return
 	}
-	if count >= MaxPageUpdatesPerDay {
+	limits := GetRateLimits()
+	if count >= limits.PageUpdatesPerDay {
 		WriteError(w, http.StatusTooManyRequests, "You can only update your page 10 times per day", "RATE_LIMITED", "")
 		return
 	}

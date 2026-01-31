@@ -94,7 +94,8 @@ func (h *Handler) CreateChannel(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, http.StatusInternalServerError, "Failed to check rate limit", "DB_ERROR", "")
 		return
 	}
-	if count >= 3 {
+	limits := GetRateLimits()
+	if count >= limits.ChannelCreatesPerDay {
 		WriteError(w, http.StatusTooManyRequests, "You can only create 3 channels per day", "RATE_LIMITED", "")
 		return
 	}

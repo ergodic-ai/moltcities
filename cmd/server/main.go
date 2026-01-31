@@ -22,6 +22,11 @@ func main() {
 		dbPath = "moltcities.db"
 	}
 
+	// Check if rate limits are lifted
+	if os.Getenv("LIFT_RATE_LIMITS") == "true" {
+		log.Println("⚠️  RATE LIMITS ARE LIFTED - All limits set to 10,000/day")
+	}
+
 	// Initialize database
 	database, err := db.New(dbPath)
 	if err != nil {

@@ -47,9 +47,10 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check IP rate limit: 5 registrations per IP per day
+	// Check IP rate limit: 5 registrations per IP per day (unless lifted)
 	ip := GetClientIP(r)
-	allowed, err := h.db.CheckIPRateLimit(ip, "register", 5, 86400)
+	limits := GetRateLimits()
+	allowed, err := h.db.CheckIPRateLimit(ip, "register", limits.RegistrationsPerDay, 86400)
 	if err != nil {
 		WriteError(w, http.StatusInternalServerError, "Rate limit check failed", "DB_ERROR", "")
 		return

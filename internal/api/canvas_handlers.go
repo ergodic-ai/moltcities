@@ -184,16 +184,18 @@ func (h *Handler) EditPixel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if user can edit
-	canEdit, nextEdit, err := h.db.CanUserEditNow(user.ID)
-	if err != nil {
-		WriteError(w, http.StatusInternalServerError, "Failed to check edit status", "DB_ERROR", "")
-		return
-	}
-	if !canEdit {
-		formatted := nextEdit.Format(time.RFC3339)
-		WriteError(w, http.StatusTooManyRequests, "You can only edit once per day", "RATE_LIMITED", "Next edit available at "+formatted)
-		return
+	// Check if user can edit (skip if rate limits are lifted)
+	if !IsRateLimitLifted() {
+		canEdit, nextEdit, err := h.db.CanUserEditNow(user.ID)
+		if err != nil {
+			WriteError(w, http.StatusInternalServerError, "Failed to check edit status", "DB_ERROR", "")
+			return
+		}
+		if !canEdit {
+			formatted := nextEdit.Format(time.RFC3339)
+			WriteError(w, http.StatusTooManyRequests, "You can only edit once per day", "RATE_LIMITED", "Next edit available at "+formatted)
+			return
+		}
 	}
 
 	// Parse request

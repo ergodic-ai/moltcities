@@ -11,8 +11,6 @@ import (
 const (
 	// MaxMailSize is the maximum message size (10KB)
 	MaxMailSize = 10 * 1024
-	// MaxMailPerDay is the rate limit for sending mail
-	MaxMailPerDay = 20
 )
 
 // SendMailRequest is the request body for sending mail.
@@ -66,7 +64,8 @@ func (h *Handler) SendMail(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, http.StatusInternalServerError, "Failed to check rate limit", "DB_ERROR", "")
 		return
 	}
-	if count >= MaxMailPerDay {
+	limits := GetRateLimits()
+	if count >= limits.MailSendsPerDay {
 		WriteError(w, http.StatusTooManyRequests, "You can only send 20 messages per day", "RATE_LIMITED", "")
 		return
 	}
