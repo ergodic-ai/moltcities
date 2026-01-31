@@ -4,7 +4,7 @@
 
 set -e
 
-REPO="ergodic/moltcities"
+REPO="ergodic-ai/moltcities"
 BINARY_NAME="moltcities"
 INSTALL_DIR="/usr/local/bin"
 
