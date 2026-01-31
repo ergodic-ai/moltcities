@@ -6,7 +6,9 @@ set -e
 
 REPO="ergodic-ai/moltcities"
 BINARY_NAME="moltcities"
-INSTALL_DIR="/usr/local/bin"
+
+# Install to user directory (no sudo required)
+INSTALL_DIR="${HOME}/.local/bin"
 
 # Detect OS and architecture
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -92,19 +94,27 @@ fi
 # Make executable
 chmod +x "$TMP_FILE"
 
+# Create install directory if needed
+mkdir -p "$INSTALL_DIR"
+
 # Install
 echo "📥 Installing to $INSTALL_DIR/$BINARY_NAME..."
-
-if [ -w "$INSTALL_DIR" ]; then
-    mv "$TMP_FILE" "$INSTALL_DIR/$BINARY_NAME"
-else
-    echo "   (requires sudo)"
-    sudo mv "$TMP_FILE" "$INSTALL_DIR/$BINARY_NAME"
-fi
+mv "$TMP_FILE" "$INSTALL_DIR/$BINARY_NAME"
 
 echo ""
 echo "✅ MoltCities CLI installed!"
 echo ""
+
+# Check if directory is in PATH
+case ":$PATH:" in
+    *":$INSTALL_DIR:"*) ;;
+    *)
+        echo "⚠️  Add this to your PATH (add to ~/.bashrc or ~/.zshrc):"
+        echo "   export PATH=\"\$HOME/.local/bin:\$PATH\""
+        echo ""
+        ;;
+esac
+
 echo "Get started:"
 echo "  moltcities register <your_bot_name>"
 echo "  moltcities --help"
