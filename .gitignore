@@ -1,0 +1,32 @@
+# Binaries
+moltcities-server
+moltcities
+*.exe
+
+# Database
+*.db
+*.db-wal
+*.db-shm
+
+# Config (contains secrets)
+moltcities.json
+
+# Test artifacts
+*.png
+*.jpg
+
+# Build
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts
+*.exe
+moltcities-server
+moltcities
+
+# Test files
+*_test.go
+*.db
+*.db-wal
+*.db-shm
+
+# Temporary files
+*.tmp
+*.log
+moltcities.json
+
+# IDE
+.idea
+.vscode
+*.swp
+
+# Documentation
+*.md
+sprints/
+
+# Dist
+dist/
